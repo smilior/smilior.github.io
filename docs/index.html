@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design Docs — The unreasonable effectiveness of HTML</title>
+  <meta name="description" content="HTML で構築するデザインシステム / 設計書のインデックス。">
+  <style>
+    :root {
+      --font-family-primary: system-ui;
+      --font-family-stack: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-size-xs: 12.5px;
+      --font-size-sm: 13px;
+      --font-size-md: 14.5px;
+      --font-size-lg: 16px;
+      --font-size-xl: 16.5px;
+      --font-size-2xl: 27px;
+      --font-size-3xl: 62px;
+      --font-weight-base: 400;
+      --line-height-base: 1.55;
+
+      --color-text-primary: #141413;
+      --color-text-secondary: #3d3d3a;
+      --color-text-tertiary: #d97757;
+      --color-text-inverse: #87867f;
+      --color-surface-base: #000000;
+      --color-surface-muted: #ffffff;
+      --color-surface-raised: #faf9f5;
+      --color-border-default: #d1cfc5;
+
+      --space-1: 7px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 14px;
+      --space-5: 22px;
+      --space-6: 24px;
+      --space-7: 26px;
+      --space-8: 36px;
+
+      --radius-xs: 14px;
+      --radius-sm: 999px;
+
+      --motion-instant: 120ms;
+      --motion-fast: 150ms;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-family-stack);
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-base);
+      line-height: var(--line-height-base);
+      color: var(--color-text-primary);
+      background: var(--color-surface-raised);
+    }
+
+    a {
+      color: var(--color-text-primary);
+      text-decoration-color: var(--color-border-default);
+      text-underline-offset: 3px;
+      transition: color var(--motion-fast) ease, text-decoration-color var(--motion-fast) ease;
+    }
+    a:hover { color: var(--color-text-tertiary); text-decoration-color: var(--color-text-tertiary); }
+    a:focus-visible {
+      outline: 2px solid var(--color-text-tertiary);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-6);
+    }
+
+    .site-header { margin-bottom: var(--space-8); }
+    .eyebrow {
+      font-size: var(--font-size-xs);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-inverse);
+      margin: 0 0 var(--space-3);
+    }
+    .title {
+      font-size: var(--font-size-3xl);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin: 0 0 var(--space-5);
+    }
+    .lede {
+      font-size: var(--font-size-xl);
+      color: var(--color-text-secondary);
+      margin: 0;
+      max-width: 56ch;
+    }
+
+    .section-title {
+      font-size: var(--font-size-2xl);
+      letter-spacing: -0.01em;
+      margin: var(--space-8) 0 var(--space-5);
+    }
+
+    .doc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .doc-card {
+      display: block;
+      padding: var(--space-6);
+      background: var(--color-surface-muted);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-xs);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color var(--motion-fast) ease, transform var(--motion-instant) ease;
+    }
+    .doc-card:hover { border-color: var(--color-text-tertiary); }
+    .doc-card:active { transform: translateY(1px); }
+    .doc-card:focus-visible {
+      outline: 2px solid var(--color-text-tertiary);
+      outline-offset: 3px;
+    }
+
+    .doc-card__meta {
+      display: inline-block;
+      font-size: var(--font-size-xs);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text-inverse);
+      padding: var(--space-1) var(--space-3);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-3);
+    }
+    .doc-card__title {
+      font-size: var(--font-size-xl);
+      margin: 0 0 var(--space-2);
+      color: var(--color-text-primary);
+    }
+    .doc-card__desc {
+      margin: 0;
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-md);
+    }
+
+    .site-footer {
+      margin-top: var(--space-8);
+      padding-top: var(--space-6);
+      border-top: 1px solid var(--color-border-default);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-inverse);
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 480px) {
+      .title { font-size: 44px; }
+      .container { padding: var(--space-6) var(--space-5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="site-header">
+      <p class="eyebrow">Design Docs</p>
+      <h1 class="title">The unreasonable effectiveness of HTML</h1>
+      <p class="lede">トークン駆動のデザインシステムと、それを HTML 単体で表現した設計書のインデックスです。</p>
+    </header>
+
+    <main>
+      <h2 class="section-title">Documents</h2>
+      <ul class="doc-list">
+        <li>
+          <a class="doc-card" href="./tokens.html">
+            <span class="doc-card__meta">Foundations</span>
+            <h3 class="doc-card__title">Design Tokens</h3>
+            <p class="doc-card__desc">色・タイポグラフィ・余白・角丸・モーションの基準値とその使用ルール。</p>
+          </a>
+        </li>
+        <li>
+          <a class="doc-card" href="./components.html">
+            <span class="doc-card__meta">Components</span>
+            <h3 class="doc-card__title">Component Specs</h3>
+            <p class="doc-card__desc">ボタン・リンク・カード等のアナトミー、状態（hover / focus-visible / disabled）、アクセシビリティ要件。</p>
+          </a>
+        </li>
+        <li>
+          <a class="doc-card" href="./accessibility.html">
+            <span class="doc-card__meta">Quality</span>
+            <h3 class="doc-card__title">Accessibility</h3>
+            <p class="doc-card__desc">WCAG 2.2 AA を満たすためのコントラスト・キーボード操作・focus indicator の要件。</p>
+          </a>
+        </li>
+      </ul>
+    </main>
+
+    <footer class="site-footer">
+      <span>Built with HTML.</span>
+      <a href="https://github.com/google-labs-code/design.md">Powered by DESIGN.md</a>
+    </footer>
+  </div>
+</body>
+</html>
