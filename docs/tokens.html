@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design Tokens — Design Docs</title>
+  <meta name="description" content="色・タイポグラフィ・余白・角丸・モーションのトークン定義と使用ルール。">
+  <style>
+    :root {
+      --font-family-stack: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      --font-size-xs: 12.5px;
+      --font-size-sm: 13px;
+      --font-size-md: 14.5px;
+      --font-size-lg: 16px;
+      --font-size-xl: 16.5px;
+      --font-size-2xl: 27px;
+      --font-size-3xl: 62px;
+      --font-weight-base: 400;
+      --line-height-base: 1.65;
+
+      --color-text-primary: #141413;
+      --color-text-secondary: #3d3d3a;
+      --color-text-tertiary: #d97757;
+      --color-text-inverse: #87867f;
+      --color-surface-base: #000000;
+      --color-surface-muted: #ffffff;
+      --color-surface-raised: #faf9f5;
+      --color-border-default: #d1cfc5;
+
+      --space-1: 7px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 14px;
+      --space-5: 22px;
+      --space-6: 24px;
+      --space-7: 26px;
+      --space-8: 36px;
+
+      --radius-xs: 14px;
+      --radius-sm: 999px;
+
+      --motion-instant: 120ms;
+      --motion-fast: 150ms;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-family-stack);
+      font-size: var(--font-size-lg);
+      line-height: var(--line-height-base);
+      color: var(--color-text-primary);
+      background: var(--color-surface-raised);
+    }
+    a { color: var(--color-text-primary); text-decoration-color: var(--color-border-default); text-underline-offset: 3px; transition: color var(--motion-fast) ease, text-decoration-color var(--motion-fast) ease; }
+    a:hover { color: var(--color-text-tertiary); text-decoration-color: var(--color-text-tertiary); }
+    a:focus-visible { outline: 2px solid var(--color-text-tertiary); outline-offset: 3px; border-radius: 4px; }
+
+    .container { max-width: 760px; margin: 0 auto; padding: var(--space-8) var(--space-6); }
+    .breadcrumb { font-size: var(--font-size-sm); color: var(--color-text-inverse); margin: 0 0 var(--space-6); }
+    .breadcrumb a { color: var(--color-text-inverse); }
+
+    .doc-header { margin-bottom: var(--space-8); padding-bottom: var(--space-6); border-bottom: 1px solid var(--color-border-default); }
+    .doc-eyebrow { font-size: var(--font-size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-inverse); margin: 0 0 var(--space-3); }
+    .doc-title { font-size: 44px; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 var(--space-5); }
+    .doc-lede { font-size: var(--font-size-xl); color: var(--color-text-secondary); margin: 0; max-width: 56ch; }
+
+    .toc { margin: 0 0 var(--space-8); padding: var(--space-5) var(--space-6); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); }
+    .toc h2 { margin: 0 0 var(--space-3); font-size: var(--font-size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-inverse); font-weight: 500; }
+    .toc ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2) var(--space-5); counter-reset: toc; font-size: var(--font-size-md); }
+    .toc li { counter-increment: toc; }
+    .toc li::before { content: counter(toc, decimal-leading-zero) " "; color: var(--color-text-inverse); font-variant-numeric: tabular-nums; margin-right: var(--space-2); }
+
+    .section { margin: 0 0 var(--space-8); scroll-margin-top: var(--space-6); }
+    .section-number { font-size: var(--font-size-xs); letter-spacing: 0.1em; color: var(--color-text-tertiary); font-variant-numeric: tabular-nums; margin: 0 0 var(--space-2); }
+    .section-title { font-size: var(--font-size-2xl); letter-spacing: -0.01em; margin: 0 0 var(--space-5); }
+    .section h3 { font-size: var(--font-size-xl); margin: var(--space-6) 0 var(--space-3); letter-spacing: -0.005em; }
+    .section p { margin: 0 0 var(--space-4); color: var(--color-text-secondary); }
+
+    table { width: 100%; border-collapse: collapse; margin: var(--space-4) 0; font-size: var(--font-size-md); }
+    th, td { text-align: left; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-default); vertical-align: middle; }
+    th { font-weight: 600; font-size: var(--font-size-sm); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-inverse); background: var(--color-surface-muted); }
+    td { color: var(--color-text-secondary); }
+    td:first-child { color: var(--color-text-primary); font-weight: 500; }
+    code { font-family: var(--font-family-mono); font-size: 0.9em; padding: 2px 6px; background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: 4px; }
+
+    .swatch { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--color-border-default); display: inline-block; vertical-align: middle; margin-right: var(--space-3); }
+
+    .type-row { padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border-default); display: grid; grid-template-columns: 110px 90px 1fr; align-items: baseline; gap: var(--space-4); }
+    .type-row:last-child { border-bottom: 0; }
+    .type-row code { color: var(--color-text-inverse); }
+    .type-row .demo { color: var(--color-text-primary); line-height: 1.2; }
+
+    .space-row { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border-default); font-size: var(--font-size-md); }
+    .space-row:last-child { border-bottom: 0; }
+    .space-row .name { width: 80px; font-weight: 500; color: var(--color-text-primary); }
+    .space-row .px { width: 60px; color: var(--color-text-inverse); font-variant-numeric: tabular-nums; }
+    .space-row .bar { background: var(--color-text-tertiary); height: 14px; border-radius: 2px; }
+
+    .radius-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-5); margin: var(--space-4) 0; }
+    .radius-tile { padding: var(--space-6); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); text-align: center; font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    .radius-tile--xs { border-radius: var(--radius-xs); }
+    .radius-tile--sm { border-radius: var(--radius-sm); }
+
+    .motion-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); margin: var(--space-4) 0; }
+    .motion-card { padding: var(--space-5); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); }
+    .motion-card .label { font-size: var(--font-size-sm); color: var(--color-text-inverse); margin-bottom: var(--space-1); }
+    .motion-card .value { font-size: var(--font-size-2xl); color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+
+    .site-footer { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border-default); font-size: var(--font-size-sm); color: var(--color-text-inverse); display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+
+    @media (max-width: 560px) {
+      .doc-title { font-size: 36px; }
+      .toc ol, .radius-grid, .motion-grid { grid-template-columns: 1fr; }
+      .type-row { grid-template-columns: 1fr; gap: var(--space-1); }
+      .container { padding: var(--space-6) var(--space-5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="breadcrumb"><a href="./index.html">← Design Docs</a></p>
+
+    <header class="doc-header">
+      <p class="doc-eyebrow">Foundations</p>
+      <h1 class="doc-title">Design Tokens</h1>
+      <p class="doc-lede">色・タイポグラフィ・余白・角丸・モーションの基準値とその使用ルール。すべての UI はこのトークンセットを起点に構築する。</p>
+    </header>
+
+    <nav class="toc" aria-label="目次">
+      <h2>目次</h2>
+      <ol>
+        <li><a href="#colors">カラー</a></li>
+        <li><a href="#typography">タイポグラフィ</a></li>
+        <li><a href="#spacing">スペーシング</a></li>
+        <li><a href="#radius">角丸</a></li>
+        <li><a href="#motion">モーション</a></li>
+        <li><a href="#rules">使用ルール</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section class="section" id="colors">
+        <p class="section-number">01</p>
+        <h2 class="section-title">カラー</h2>
+        <p>意味づけ（セマンティック）された 8 色のみで構成する。生の hex 値を直接 UI コードに書かない。</p>
+        <table>
+          <thead>
+            <tr><th>トークン</th><th>値</th><th>用途</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="swatch" style="background:#141413"></span><code>color.text.primary</code></td><td>#141413</td><td>本文・見出し</td></tr>
+            <tr><td><span class="swatch" style="background:#3d3d3a"></span><code>color.text.secondary</code></td><td>#3d3d3a</td><td>補助テキスト</td></tr>
+            <tr><td><span class="swatch" style="background:#d97757"></span><code>color.text.tertiary</code></td><td>#d97757</td><td>アクセント・focus・リンクホバー</td></tr>
+            <tr><td><span class="swatch" style="background:#87867f"></span><code>color.text.inverse</code></td><td>#87867f</td><td>キャプション・eyebrow</td></tr>
+            <tr><td><span class="swatch" style="background:#000000"></span><code>color.surface.base</code></td><td>#000000</td><td>反転表示の背景</td></tr>
+            <tr><td><span class="swatch" style="background:#ffffff"></span><code>color.surface.muted</code></td><td>#ffffff</td><td>カード・テーブルヘッダ・コードブロック</td></tr>
+            <tr><td><span class="swatch" style="background:#faf9f5"></span><code>color.surface.raised</code></td><td>#faf9f5</td><td>ページ背景</td></tr>
+            <tr><td><span class="swatch" style="background:#d1cfc5"></span><code>color.border.default</code></td><td>#d1cfc5</td><td>区切り・カード枠</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section" id="typography">
+        <p class="section-number">02</p>
+        <h2 class="section-title">タイポグラフィ</h2>
+        <p>フォントファミリは <code>system-ui</code> スタックのみ。Web フォントは読み込まない。</p>
+        <h3>サイズスケール</h3>
+        <div>
+          <div class="type-row"><code>font.size.xs</code><span>12.5px</span><span class="demo" style="font-size:12.5px">この大きさのテキスト</span></div>
+          <div class="type-row"><code>font.size.sm</code><span>13px</span><span class="demo" style="font-size:13px">この大きさのテキスト</span></div>
+          <div class="type-row"><code>font.size.md</code><span>14.5px</span><span class="demo" style="font-size:14.5px">この大きさのテキスト</span></div>
+          <div class="type-row"><code>font.size.lg</code><span>16px</span><span class="demo" style="font-size:16px">この大きさのテキスト</span></div>
+          <div class="type-row"><code>font.size.xl</code><span>16.5px</span><span class="demo" style="font-size:16.5px">この大きさのテキスト</span></div>
+          <div class="type-row"><code>font.size.2xl</code><span>27px</span><span class="demo" style="font-size:27px">この大きさのテキスト</span></div>
+          <div class="type-row"><code>font.size.3xl</code><span>62px</span><span class="demo" style="font-size:62px;line-height:1">大見出し</span></div>
+        </div>
+      </section>
+
+      <section class="section" id="spacing">
+        <p class="section-number">03</p>
+        <h2 class="section-title">スペーシング</h2>
+        <p>余白は 8 段階のスケールから選ぶ。スケール外の値を使わない。</p>
+        <div>
+          <div class="space-row"><span class="name">space.1</span><span class="px">7px</span><span class="bar" style="width:7px"></span></div>
+          <div class="space-row"><span class="name">space.2</span><span class="px">8px</span><span class="bar" style="width:8px"></span></div>
+          <div class="space-row"><span class="name">space.3</span><span class="px">12px</span><span class="bar" style="width:12px"></span></div>
+          <div class="space-row"><span class="name">space.4</span><span class="px">14px</span><span class="bar" style="width:14px"></span></div>
+          <div class="space-row"><span class="name">space.5</span><span class="px">22px</span><span class="bar" style="width:22px"></span></div>
+          <div class="space-row"><span class="name">space.6</span><span class="px">24px</span><span class="bar" style="width:24px"></span></div>
+          <div class="space-row"><span class="name">space.7</span><span class="px">26px</span><span class="bar" style="width:26px"></span></div>
+          <div class="space-row"><span class="name">space.8</span><span class="px">36px</span><span class="bar" style="width:36px"></span></div>
+        </div>
+      </section>
+
+      <section class="section" id="radius">
+        <p class="section-number">04</p>
+        <h2 class="section-title">角丸</h2>
+        <p>角丸は 2 種類のみ。それ以外の値は使わない。</p>
+        <div class="radius-grid">
+          <div class="radius-tile radius-tile--xs">
+            <strong style="display:block;color:var(--color-text-primary);margin-bottom:var(--space-1)">radius.xs</strong>
+            14px — カード・コードブロック・コールアウト
+          </div>
+          <div class="radius-tile radius-tile--sm">
+            <strong style="display:block;color:var(--color-text-primary);margin-bottom:var(--space-1)">radius.sm</strong>
+            999px — バッジ・ピル
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="motion">
+        <p class="section-number">05</p>
+        <h2 class="section-title">モーション</h2>
+        <p>状態遷移は 2 種類の duration から選ぶ。<code>prefers-reduced-motion</code> 設定時は無効化する。</p>
+        <div class="motion-grid">
+          <div class="motion-card">
+            <div class="label">motion.duration.instant</div>
+            <div class="value">120ms</div>
+            <p style="margin:var(--space-2) 0 0;color:var(--color-text-secondary);font-size:var(--font-size-md)">押下フィードバック・即時反応</p>
+          </div>
+          <div class="motion-card">
+            <div class="label">motion.duration.fast</div>
+            <div class="value">150ms</div>
+            <p style="margin:var(--space-2) 0 0;color:var(--color-text-secondary);font-size:var(--font-size-md)">hover・focus・色のクロスフェード</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="rules">
+        <p class="section-number">06</p>
+        <h2 class="section-title">使用ルール</h2>
+        <h3>Do</h3>
+        <ul>
+          <li>セマンティックトークン（<code>color.text.primary</code> 等）を参照する。</li>
+          <li>余白・角丸・タイポはスケールから選ぶ。</li>
+          <li>1 ページ内で同じ意味の要素には同じトークンを使う。</li>
+        </ul>
+        <h3>Don't</h3>
+        <ul>
+          <li>生 hex 値（<code>#a1b2c3</code>）を UI コードに直接書かない。</li>
+          <li>スケール外の余白（<code>13px</code> 等）を使わない。</li>
+          <li>低コントラストの組み合わせ（例: <code>text.inverse</code> on <code>surface.raised</code>）を本文に使わない。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Foundations · Design Tokens</span>
+      <a href="./index.html">インデックスに戻る</a>
+    </footer>
+  </div>
+</body>
+</html>

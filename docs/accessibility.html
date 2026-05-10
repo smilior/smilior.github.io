@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accessibility — Design Docs</title>
+  <meta name="description" content="WCAG 2.2 AA を満たすためのコントラスト・キーボード操作・focus indicator の要件。">
+  <style>
+    :root {
+      --font-family-stack: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      --font-size-xs: 12.5px;
+      --font-size-sm: 13px;
+      --font-size-md: 14.5px;
+      --font-size-lg: 16px;
+      --font-size-xl: 16.5px;
+      --font-size-2xl: 27px;
+      --font-size-3xl: 62px;
+      --line-height-base: 1.65;
+
+      --color-text-primary: #141413;
+      --color-text-secondary: #3d3d3a;
+      --color-text-tertiary: #d97757;
+      --color-text-inverse: #87867f;
+      --color-surface-base: #000000;
+      --color-surface-muted: #ffffff;
+      --color-surface-raised: #faf9f5;
+      --color-border-default: #d1cfc5;
+
+      --space-1: 7px; --space-2: 8px; --space-3: 12px; --space-4: 14px;
+      --space-5: 22px; --space-6: 24px; --space-7: 26px; --space-8: 36px;
+
+      --radius-xs: 14px;
+      --radius-sm: 999px;
+
+      --motion-instant: 120ms;
+      --motion-fast: 150ms;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-family-stack);
+      font-size: var(--font-size-lg);
+      line-height: var(--line-height-base);
+      color: var(--color-text-primary);
+      background: var(--color-surface-raised);
+    }
+    a { color: var(--color-text-primary); text-decoration-color: var(--color-border-default); text-underline-offset: 3px; transition: color var(--motion-fast) ease, text-decoration-color var(--motion-fast) ease; }
+    a:hover { color: var(--color-text-tertiary); text-decoration-color: var(--color-text-tertiary); }
+    a:focus-visible { outline: 2px solid var(--color-text-tertiary); outline-offset: 3px; border-radius: 4px; }
+
+    .container { max-width: 760px; margin: 0 auto; padding: var(--space-8) var(--space-6); }
+    .breadcrumb { font-size: var(--font-size-sm); color: var(--color-text-inverse); margin: 0 0 var(--space-6); }
+    .breadcrumb a { color: var(--color-text-inverse); }
+
+    .doc-header { margin-bottom: var(--space-8); padding-bottom: var(--space-6); border-bottom: 1px solid var(--color-border-default); }
+    .doc-eyebrow { font-size: var(--font-size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-inverse); margin: 0 0 var(--space-3); }
+    .doc-title { font-size: 44px; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 var(--space-5); }
+    .doc-lede { font-size: var(--font-size-xl); color: var(--color-text-secondary); margin: 0; max-width: 56ch; }
+
+    .toc { margin: 0 0 var(--space-8); padding: var(--space-5) var(--space-6); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); }
+    .toc h2 { margin: 0 0 var(--space-3); font-size: var(--font-size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-inverse); font-weight: 500; }
+    .toc ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2) var(--space-5); counter-reset: toc; font-size: var(--font-size-md); }
+    .toc li { counter-increment: toc; }
+    .toc li::before { content: counter(toc, decimal-leading-zero) " "; color: var(--color-text-inverse); font-variant-numeric: tabular-nums; margin-right: var(--space-2); }
+
+    .section { margin: 0 0 var(--space-8); scroll-margin-top: var(--space-6); }
+    .section-number { font-size: var(--font-size-xs); letter-spacing: 0.1em; color: var(--color-text-tertiary); font-variant-numeric: tabular-nums; margin: 0 0 var(--space-2); }
+    .section-title { font-size: var(--font-size-2xl); letter-spacing: -0.01em; margin: 0 0 var(--space-5); }
+    .section h3 { font-size: var(--font-size-xl); margin: var(--space-6) 0 var(--space-3); letter-spacing: -0.005em; }
+    .section p { margin: 0 0 var(--space-4); color: var(--color-text-secondary); }
+    .section ul, .section ol { padding-left: var(--space-6); color: var(--color-text-secondary); }
+    .section li { margin-bottom: var(--space-2); }
+
+    code { font-family: var(--font-family-mono); font-size: 0.9em; padding: 2px 6px; background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: 4px; }
+    pre { font-family: var(--font-family-mono); font-size: var(--font-size-md); line-height: 1.55; background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); padding: var(--space-5) var(--space-6); overflow-x: auto; margin: var(--space-4) 0; color: var(--color-text-primary); }
+    pre code { background: none; border: 0; padding: 0; }
+
+    table { width: 100%; border-collapse: collapse; margin: var(--space-4) 0; font-size: var(--font-size-md); }
+    th, td { text-align: left; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-default); vertical-align: middle; }
+    th { font-weight: 600; font-size: var(--font-size-sm); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-inverse); background: var(--color-surface-muted); }
+    td { color: var(--color-text-secondary); }
+    td:first-child { color: var(--color-text-primary); font-weight: 500; }
+
+    .target-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); margin: var(--space-4) 0; }
+    .target-card { padding: var(--space-5) var(--space-6); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); }
+    .target-card .label { font-size: var(--font-size-sm); color: var(--color-text-inverse); margin-bottom: var(--space-1); letter-spacing: 0.04em; text-transform: uppercase; }
+    .target-card .value { font-size: var(--font-size-2xl); color: var(--color-text-primary); font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .target-card .desc { font-size: var(--font-size-md); color: var(--color-text-secondary); margin-top: var(--space-2); }
+
+    .contrast-row { display: flex; align-items: stretch; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); margin-bottom: var(--space-3); background: var(--color-surface-muted); }
+    .contrast-sample { flex: 1; padding: var(--space-4); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: var(--font-size-md); }
+    .contrast-meta { width: 130px; display: flex; flex-direction: column; justify-content: center; font-size: var(--font-size-sm); color: var(--color-text-secondary); padding-left: var(--space-2); }
+    .contrast-meta strong { display: block; color: var(--color-text-primary); font-size: var(--font-size-md); }
+
+    .focus-demo { display: inline-block; padding: var(--space-3) var(--space-5); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-sm); outline: 2px solid var(--color-text-tertiary); outline-offset: 3px; margin: var(--space-3) var(--space-3) var(--space-3) 0; }
+
+    .checklist { list-style: none; padding: 0; }
+    .checklist li { padding-left: var(--space-7); position: relative; margin-bottom: var(--space-3); color: var(--color-text-primary); }
+    .checklist li::before { content: ""; position: absolute; left: 0; top: 0.4em; width: 16px; height: 16px; border: 1.5px solid var(--color-border-default); border-radius: 4px; background: var(--color-surface-muted); }
+
+    .badge { display: inline-block; font-size: var(--font-size-xs); letter-spacing: 0.04em; padding: 2px var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--color-border-default); color: var(--color-text-secondary); background: var(--color-surface-muted); }
+    .badge--pass { color: #2c7a4b; border-color: #2c7a4b; }
+    .badge--fail { color: #b04a2c; border-color: #b04a2c; }
+
+    .site-footer { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border-default); font-size: var(--font-size-sm); color: var(--color-text-inverse); display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+
+    @media (max-width: 560px) {
+      .doc-title { font-size: 36px; }
+      .toc ol, .target-grid { grid-template-columns: 1fr; }
+      .contrast-row { flex-direction: column; }
+      .contrast-meta { width: 100%; padding-left: 0; }
+      .container { padding: var(--space-6) var(--space-5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="breadcrumb"><a href="./index.html">← Design Docs</a></p>
+
+    <header class="doc-header">
+      <p class="doc-eyebrow">Quality</p>
+      <h1 class="doc-title">Accessibility</h1>
+      <p class="doc-lede">WCAG 2.2 AA を満たすためのコントラスト・キーボード操作・focus indicator・支援技術対応の要件。すべてのページ・コンポーネントが対象。</p>
+    </header>
+
+    <nav class="toc" aria-label="目次">
+      <h2>目次</h2>
+      <ol>
+        <li><a href="#target">準拠目標</a></li>
+        <li><a href="#contrast">コントラスト</a></li>
+        <li><a href="#keyboard">キーボード操作</a></li>
+        <li><a href="#focus">focus-visible</a></li>
+        <li><a href="#aria">ARIA</a></li>
+        <li><a href="#sr">スクリーンリーダー</a></li>
+        <li><a href="#motion">モーションと縮小設定</a></li>
+        <li><a href="#qa">QA チェックリスト</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section class="section" id="target">
+        <p class="section-number">01</p>
+        <h2 class="section-title">準拠目標</h2>
+        <p>本サイトおよびすべてのコンポーネントは <strong>WCAG 2.2 レベル AA</strong> を満たすことを目標とする。</p>
+        <div class="target-grid">
+          <div class="target-card">
+            <div class="label">Standard</div>
+            <div class="value">WCAG 2.2 AA</div>
+            <div class="desc">Web Content Accessibility Guidelines</div>
+          </div>
+          <div class="target-card">
+            <div class="label">Verification</div>
+            <div class="value">手動 + 自動</div>
+            <div class="desc">axe-core / Lighthouse / NVDA / VoiceOver</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="contrast">
+        <p class="section-number">02</p>
+        <h2 class="section-title">コントラスト</h2>
+        <p>本文 <code>4.5:1</code> 以上、大きい文字（18pt または 14pt 太字以上）と UI コンポーネント・グラフィックは <code>3:1</code> 以上を満たすこと。</p>
+
+        <h3>サンプル</h3>
+        <div class="contrast-row">
+          <div class="contrast-sample" style="background:#faf9f5;color:#141413">本文テキスト on Raised surface</div>
+          <div class="contrast-meta"><strong>15.9 : 1</strong>本文 / <span class="badge badge--pass">AA</span></div>
+        </div>
+        <div class="contrast-row">
+          <div class="contrast-sample" style="background:#faf9f5;color:#3d3d3a">補助テキスト on Raised surface</div>
+          <div class="contrast-meta"><strong>10.6 : 1</strong>本文 / <span class="badge badge--pass">AA</span></div>
+        </div>
+        <div class="contrast-row">
+          <div class="contrast-sample" style="background:#faf9f5;color:#d97757">アクセント色 on Raised surface</div>
+          <div class="contrast-meta"><strong>3.4 : 1</strong>大文字のみ / <span class="badge badge--pass">AA Large</span></div>
+        </div>
+        <div class="contrast-row">
+          <div class="contrast-sample" style="background:#faf9f5;color:#87867f">Inverse on Raised surface</div>
+          <div class="contrast-meta"><strong>2.7 : 1</strong>本文不可 / <span class="badge badge--fail">FAIL</span></div>
+        </div>
+        <p><code>color.text.inverse</code> は本文には使えない。eyebrow / メタ情報など装飾的な用途のみ。</p>
+      </section>
+
+      <section class="section" id="keyboard">
+        <p class="section-number">03</p>
+        <h2 class="section-title">キーボード操作</h2>
+        <p>マウス操作なしですべての機能が完結すること。</p>
+        <table>
+          <thead><tr><th>キー</th><th>挙動</th></tr></thead>
+          <tbody>
+            <tr><td><code>Tab</code></td><td>次のフォーカス可能要素へ移動</td></tr>
+            <tr><td><code>Shift + Tab</code></td><td>前のフォーカス可能要素へ移動</td></tr>
+            <tr><td><code>Enter</code></td><td>リンク・ボタンを実行</td></tr>
+            <tr><td><code>Space</code></td><td>ボタン実行 / チェックボックス切り替え</td></tr>
+            <tr><td><code>Esc</code></td><td>モーダル / ポップオーバーを閉じる</td></tr>
+            <tr><td><code>↑ ↓</code></td><td>セレクトメニュー / リストの選択移動</td></tr>
+          </tbody>
+        </table>
+        <h3>ルール</h3>
+        <ul>
+          <li>Tab 順序は視覚的な順序と一致させる。<code>tabindex</code> 正の値は使わない。</li>
+          <li>キーボードでフォーカスできない要素にクリックハンドラを付与しない。</li>
+          <li>キーボードトラップ（フォーカスが外れない状態）を作らない。</li>
+        </ul>
+      </section>
+
+      <section class="section" id="focus">
+        <p class="section-number">04</p>
+        <h2 class="section-title">focus-visible</h2>
+        <p>フォーカスインジケータは <strong>常に視認可能</strong> でなければならない。<code>outline: none</code> 単独での消去は禁止。</p>
+
+        <h3>仕様</h3>
+        <ul>
+          <li>太さ <code>2px solid</code></li>
+          <li>色 <code>color.text.tertiary</code> (#d97757)</li>
+          <li>offset <code>3px</code></li>
+          <li>radius は対象要素に合わせる（リンクは <code>4px</code>、ボタンは <code>radius.sm</code>）</li>
+        </ul>
+
+        <h3>サンプル</h3>
+        <span class="focus-demo">フォーカス中のボタン</span>
+
+        <pre><code>:focus-visible {
+  outline: 2px solid var(--color-text-tertiary);
+  outline-offset: 3px;
+}</code></pre>
+      </section>
+
+      <section class="section" id="aria">
+        <p class="section-number">05</p>
+        <h2 class="section-title">ARIA</h2>
+        <p>セマンティック HTML を最優先し、ARIA は <strong>HTML だけで表現できない場合の補強</strong> として使う。</p>
+
+        <h3>使用ルール</h3>
+        <table>
+          <thead><tr><th>属性</th><th>用途</th></tr></thead>
+          <tbody>
+            <tr><td><code>aria-label</code></td><td>視覚ラベルがないアイコンボタン等の名前付け</td></tr>
+            <tr><td><code>aria-describedby</code></td><td>入力欄とエラーメッセージの関連付け</td></tr>
+            <tr><td><code>aria-invalid="true"</code></td><td>バリデーション不通過の入力欄</td></tr>
+            <tr><td><code>aria-live="polite"</code></td><td>送信状態など非同期メッセージの通知</td></tr>
+            <tr><td><code>aria-expanded</code></td><td>開閉可能なディスクロージャ要素の状態</td></tr>
+            <tr><td><code>role="alert"</code></td><td>送信失敗など即時通知が必要なメッセージ</td></tr>
+          </tbody>
+        </table>
+        <h3>禁則</h3>
+        <ul>
+          <li><code>div</code> や <code>span</code> に <code>role="button"</code> を付けず、<code>&lt;button&gt;</code> を使う。</li>
+          <li>セマンティック HTML と矛盾する <code>role</code> は付けない。</li>
+        </ul>
+      </section>
+
+      <section class="section" id="sr">
+        <p class="section-number">06</p>
+        <h2 class="section-title">スクリーンリーダー</h2>
+        <p>NVDA（Windows）と VoiceOver（macOS / iOS）を主要対象として確認する。</p>
+        <h3>確認ポイント</h3>
+        <ul>
+          <li>すべての画像に <code>alt</code> 属性を付ける。装飾画像は <code>alt=""</code>。</li>
+          <li>見出しレベル（h1 → h2 → h3）の飛ばしをしない。</li>
+          <li>ランドマーク（<code>header</code>, <code>main</code>, <code>nav</code>, <code>footer</code>）を適切に配置する。</li>
+          <li>フォームの送信中・成功・失敗を <code>aria-live</code> 領域に出力する。</li>
+          <li>状態の変化（バッジの色変更など）はテキストでも伝える。</li>
+        </ul>
+      </section>
+
+      <section class="section" id="motion">
+        <p class="section-number">07</p>
+        <h2 class="section-title">モーションと縮小設定</h2>
+        <p><code>prefers-reduced-motion</code> が <code>reduce</code> の場合、装飾的なアニメーションを停止する。</p>
+        <pre><code>@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}</code></pre>
+        <ul>
+          <li>状態フィードバックに必要な遷移（focus / hover の色変化）は維持してよい。</li>
+          <li>視差スクロール・自動再生動画は停止または非表示にする。</li>
+        </ul>
+      </section>
+
+      <section class="section" id="qa">
+        <p class="section-number">08</p>
+        <h2 class="section-title">QA チェックリスト</h2>
+        <ul class="checklist">
+          <li>キーボードのみで全ページの主要操作を完了できる。</li>
+          <li>すべてのフォーカス可能要素に視認可能な focus-visible が出る。</li>
+          <li>本文と背景のコントラスト比が <code>4.5:1</code> 以上ある。</li>
+          <li>すべての入力欄に対応する <code>&lt;label&gt;</code> がある。</li>
+          <li>エラー時に <code>aria-invalid</code> と <code>aria-describedby</code> が設定されている。</li>
+          <li>非同期の状態変化（送信中 / 成功 / 失敗）が支援技術に伝わる。</li>
+          <li>見出しレベルがスキップされていない。</li>
+          <li><code>prefers-reduced-motion</code> 設定時に装飾アニメーションが停止する。</li>
+          <li>axe-core / Lighthouse の自動チェックでエラー 0 件。</li>
+          <li>NVDA または VoiceOver で実際に主要フローを通せる。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Quality · Accessibility</span>
+      <a href="./index.html">インデックスに戻る</a>
+    </footer>
+  </div>
+</body>
+</html>

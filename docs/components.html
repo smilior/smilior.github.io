@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Component Specs — Design Docs</title>
+  <meta name="description" content="ボタン・リンク・フォーム・カード等のアナトミー、状態、アクセシビリティ要件。">
+  <style>
+    :root {
+      --font-family-stack: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      --font-size-xs: 12.5px;
+      --font-size-sm: 13px;
+      --font-size-md: 14.5px;
+      --font-size-lg: 16px;
+      --font-size-xl: 16.5px;
+      --font-size-2xl: 27px;
+      --font-size-3xl: 62px;
+      --line-height-base: 1.65;
+
+      --color-text-primary: #141413;
+      --color-text-secondary: #3d3d3a;
+      --color-text-tertiary: #d97757;
+      --color-text-inverse: #87867f;
+      --color-surface-base: #000000;
+      --color-surface-muted: #ffffff;
+      --color-surface-raised: #faf9f5;
+      --color-border-default: #d1cfc5;
+
+      --space-1: 7px; --space-2: 8px; --space-3: 12px; --space-4: 14px;
+      --space-5: 22px; --space-6: 24px; --space-7: 26px; --space-8: 36px;
+
+      --radius-xs: 14px;
+      --radius-sm: 999px;
+
+      --motion-instant: 120ms;
+      --motion-fast: 150ms;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-family-stack);
+      font-size: var(--font-size-lg);
+      line-height: var(--line-height-base);
+      color: var(--color-text-primary);
+      background: var(--color-surface-raised);
+    }
+    a { color: var(--color-text-primary); text-decoration-color: var(--color-border-default); text-underline-offset: 3px; transition: color var(--motion-fast) ease, text-decoration-color var(--motion-fast) ease; }
+    a:hover { color: var(--color-text-tertiary); text-decoration-color: var(--color-text-tertiary); }
+    a:focus-visible { outline: 2px solid var(--color-text-tertiary); outline-offset: 3px; border-radius: 4px; }
+
+    .container { max-width: 760px; margin: 0 auto; padding: var(--space-8) var(--space-6); }
+    .breadcrumb { font-size: var(--font-size-sm); color: var(--color-text-inverse); margin: 0 0 var(--space-6); }
+    .breadcrumb a { color: var(--color-text-inverse); }
+
+    .doc-header { margin-bottom: var(--space-8); padding-bottom: var(--space-6); border-bottom: 1px solid var(--color-border-default); }
+    .doc-eyebrow { font-size: var(--font-size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-inverse); margin: 0 0 var(--space-3); }
+    .doc-title { font-size: 44px; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 var(--space-5); }
+    .doc-lede { font-size: var(--font-size-xl); color: var(--color-text-secondary); margin: 0; max-width: 56ch; }
+
+    .toc { margin: 0 0 var(--space-8); padding: var(--space-5) var(--space-6); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); }
+    .toc h2 { margin: 0 0 var(--space-3); font-size: var(--font-size-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-inverse); font-weight: 500; }
+    .toc ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2) var(--space-5); counter-reset: toc; font-size: var(--font-size-md); }
+    .toc li { counter-increment: toc; }
+    .toc li::before { content: counter(toc, decimal-leading-zero) " "; color: var(--color-text-inverse); font-variant-numeric: tabular-nums; margin-right: var(--space-2); }
+
+    .section { margin: 0 0 var(--space-8); scroll-margin-top: var(--space-6); }
+    .section-number { font-size: var(--font-size-xs); letter-spacing: 0.1em; color: var(--color-text-tertiary); font-variant-numeric: tabular-nums; margin: 0 0 var(--space-2); }
+    .section-title { font-size: var(--font-size-2xl); letter-spacing: -0.01em; margin: 0 0 var(--space-5); }
+    .section h3 { font-size: var(--font-size-xl); margin: var(--space-6) 0 var(--space-3); letter-spacing: -0.005em; }
+    .section h4 { font-size: var(--font-size-md); text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-inverse); margin: var(--space-5) 0 var(--space-2); font-weight: 600; }
+    .section p { margin: 0 0 var(--space-4); color: var(--color-text-secondary); }
+
+    code { font-family: var(--font-family-mono); font-size: 0.9em; padding: 2px 6px; background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: 4px; }
+    pre { font-family: var(--font-family-mono); font-size: var(--font-size-md); line-height: 1.55; background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); padding: var(--space-5) var(--space-6); overflow-x: auto; margin: var(--space-4) 0; color: var(--color-text-primary); }
+    pre code { background: none; border: 0; padding: 0; }
+
+    table { width: 100%; border-collapse: collapse; margin: var(--space-4) 0; font-size: var(--font-size-md); }
+    th, td { text-align: left; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-default); vertical-align: top; }
+    th { font-weight: 600; font-size: var(--font-size-sm); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-inverse); background: var(--color-surface-muted); }
+    td { color: var(--color-text-secondary); }
+    td:first-child { color: var(--color-text-primary); font-weight: 500; }
+
+    .preview { padding: var(--space-6); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); margin: var(--space-3) 0 var(--space-5); display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
+
+    .btn { font-family: inherit; font-size: var(--font-size-md); font-weight: 500; line-height: 1; padding: var(--space-3) var(--space-5); border-radius: var(--radius-sm); border: 1px solid transparent; cursor: pointer; transition: background var(--motion-fast) ease, color var(--motion-fast) ease, border-color var(--motion-fast) ease, transform var(--motion-instant) ease; }
+    .btn:focus-visible { outline: 2px solid var(--color-text-tertiary); outline-offset: 3px; }
+    .btn:active { transform: translateY(1px); }
+    .btn[disabled] { opacity: 0.45; cursor: not-allowed; transform: none; }
+    .btn--primary { background: var(--color-text-primary); color: var(--color-surface-muted); border-color: var(--color-text-primary); }
+    .btn--primary:hover:not([disabled]) { background: var(--color-text-tertiary); border-color: var(--color-text-tertiary); }
+    .btn--secondary { background: var(--color-surface-muted); color: var(--color-text-primary); border-color: var(--color-border-default); }
+    .btn--secondary:hover:not([disabled]) { border-color: var(--color-text-tertiary); color: var(--color-text-tertiary); }
+    .btn--ghost { background: transparent; color: var(--color-text-primary); border-color: transparent; }
+    .btn--ghost:hover:not([disabled]) { color: var(--color-text-tertiary); }
+
+    label.field { display: block; margin-bottom: var(--space-4); }
+    label.field > span { display: block; font-size: var(--font-size-sm); color: var(--color-text-inverse); margin-bottom: var(--space-1); letter-spacing: 0.04em; text-transform: uppercase; }
+    .input, .textarea, .select { width: 100%; font: inherit; font-size: var(--font-size-md); padding: var(--space-3) var(--space-4); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); transition: border-color var(--motion-fast) ease; }
+    .input:hover, .textarea:hover, .select:hover { border-color: var(--color-text-secondary); }
+    .input:focus-visible, .textarea:focus-visible, .select:focus-visible { outline: 2px solid var(--color-text-tertiary); outline-offset: 2px; border-color: var(--color-text-tertiary); }
+    .textarea { min-height: 96px; resize: vertical; }
+    .input[aria-invalid="true"] { border-color: #b04a2c; }
+    .field-error { display: block; font-size: var(--font-size-sm); color: #b04a2c; margin-top: var(--space-1); }
+
+    .checkbox-row { display: flex; align-items: flex-start; gap: var(--space-3); font-size: var(--font-size-md); color: var(--color-text-primary); }
+    .checkbox-row input { margin-top: 0.3em; }
+
+    .card-demo { padding: var(--space-6); background: var(--color-surface-muted); border: 1px solid var(--color-border-default); border-radius: var(--radius-xs); transition: border-color var(--motion-fast) ease; max-width: 360px; }
+    .card-demo:hover { border-color: var(--color-text-tertiary); }
+    .card-demo h4 { font-size: var(--font-size-xl); margin: 0 0 var(--space-2); color: var(--color-text-primary); text-transform: none; letter-spacing: 0; }
+    .card-demo p { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-md); }
+
+    .badge { display: inline-block; font-size: var(--font-size-xs); letter-spacing: 0.04em; padding: 2px var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--color-border-default); color: var(--color-text-secondary); background: var(--color-surface-muted); }
+    .badge--accent { color: var(--color-text-tertiary); border-color: var(--color-text-tertiary); }
+    .badge--solid { color: var(--color-surface-muted); background: var(--color-text-primary); border-color: var(--color-text-primary); }
+
+    .callout { border: 1px solid var(--color-border-default); border-left: 3px solid var(--color-text-tertiary); border-radius: var(--radius-xs); padding: var(--space-4) var(--space-6); background: var(--color-surface-muted); margin: var(--space-3) 0; font-size: var(--font-size-md); }
+    .callout strong { display: block; margin-bottom: var(--space-1); color: var(--color-text-primary); }
+    .callout p { margin: 0; color: var(--color-text-secondary); }
+
+    .site-footer { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--color-border-default); font-size: var(--font-size-sm); color: var(--color-text-inverse); display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+
+    @media (max-width: 560px) {
+      .doc-title { font-size: 36px; }
+      .toc ol { grid-template-columns: 1fr; }
+      .container { padding: var(--space-6) var(--space-5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="breadcrumb"><a href="./index.html">← Design Docs</a></p>
+
+    <header class="doc-header">
+      <p class="doc-eyebrow">Components</p>
+      <h1 class="doc-title">Component Specs</h1>
+      <p class="doc-lede">UI コンポーネントごとのアナトミー・状態・アクセシビリティ要件を定義する。すべてのコンポーネントは default / hover / focus-visible / active / disabled の状態を持つ。</p>
+    </header>
+
+    <nav class="toc" aria-label="目次">
+      <h2>目次</h2>
+      <ol>
+        <li><a href="#button">ボタン</a></li>
+        <li><a href="#link">リンク</a></li>
+        <li><a href="#form">フォーム</a></li>
+        <li><a href="#card">カード</a></li>
+        <li><a href="#badge">バッジ</a></li>
+        <li><a href="#callout">コールアウト</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section class="section" id="button">
+        <p class="section-number">01</p>
+        <h2 class="section-title">ボタン</h2>
+        <p>主要アクション用の <code>primary</code>、副次アクション用の <code>secondary</code>、装飾を最小化した <code>ghost</code> の 3 バリアントを持つ。</p>
+
+        <h4>Variants</h4>
+        <div class="preview">
+          <button class="btn btn--primary" type="button">送信する</button>
+          <button class="btn btn--secondary" type="button">キャンセル</button>
+          <button class="btn btn--ghost" type="button">後で</button>
+        </div>
+
+        <h4>States</h4>
+        <div class="preview">
+          <button class="btn btn--primary" type="button">Default</button>
+          <button class="btn btn--primary" type="button" style="background:var(--color-text-tertiary);border-color:var(--color-text-tertiary)">Hover</button>
+          <button class="btn btn--primary" type="button" style="outline:2px solid var(--color-text-tertiary);outline-offset:3px">Focus</button>
+          <button class="btn btn--primary" type="button" disabled>Disabled</button>
+        </div>
+
+        <h3>仕様</h3>
+        <table>
+          <tbody>
+            <tr><td>パディング</td><td><code>space.3</code> × <code>space.5</code></td></tr>
+            <tr><td>角丸</td><td><code>radius.sm</code></td></tr>
+            <tr><td>フォントサイズ</td><td><code>font.size.md</code> / 500</td></tr>
+            <tr><td>focus-visible</td><td><code>2px solid color.text.tertiary</code>, offset <code>3px</code></td></tr>
+            <tr><td>active</td><td><code>translateY(1px)</code></td></tr>
+            <tr><td>disabled</td><td><code>opacity 0.45</code> / <code>cursor: not-allowed</code></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section" id="link">
+        <p class="section-number">02</p>
+        <h2 class="section-title">リンク</h2>
+        <p>本文中のリンクは <code>color.text.primary</code> + 下線で表現する。hover でアクセント色に遷移する。</p>
+        <div class="preview" style="display:block">
+          本文のなかに <a href="#link">普通のインラインリンク</a> が含まれる例。フォーカス時は <a href="#link" style="outline:2px solid var(--color-text-tertiary);outline-offset:3px;border-radius:4px">アウトライン</a> を表示する。
+        </div>
+        <h3>仕様</h3>
+        <ul>
+          <li>下線は常時表示（色は <code>color.border.default</code>）。</li>
+          <li>hover で文字色・下線色ともに <code>color.text.tertiary</code>。</li>
+          <li>focus-visible は他コンポーネントと同じ <code>2px solid</code> 枠。</li>
+          <li>外部リンクには <code>rel="noopener noreferrer"</code> を付与する。</li>
+        </ul>
+      </section>
+
+      <section class="section" id="form">
+        <p class="section-number">03</p>
+        <h2 class="section-title">フォーム</h2>
+        <p>すべての入力欄は <code>&lt;label&gt;</code> と関連付ける。エラー時は <code>aria-invalid</code> + <code>aria-describedby</code> を併用する。</p>
+
+        <h4>標準</h4>
+        <div class="preview" style="display:block">
+          <label class="field">
+            <span>氏名</span>
+            <input class="input" type="text" placeholder="山田 太郎">
+          </label>
+          <label class="field">
+            <span>件名</span>
+            <select class="select">
+              <option>質問</option><option>不具合</option><option>その他</option>
+            </select>
+          </label>
+          <label class="field" style="margin-bottom:0">
+            <span>お問い合わせ内容</span>
+            <textarea class="textarea" placeholder="ご記入ください"></textarea>
+          </label>
+        </div>
+
+        <h4>エラー状態</h4>
+        <div class="preview" style="display:block">
+          <label class="field" style="margin-bottom:0">
+            <span>メールアドレス</span>
+            <input class="input" type="email" value="invalid-email" aria-invalid="true" aria-describedby="email-error">
+            <span class="field-error" id="email-error">メールアドレスの形式が正しくありません。</span>
+          </label>
+        </div>
+
+        <h4>同意</h4>
+        <div class="preview">
+          <label class="checkbox-row">
+            <input type="checkbox">
+            <span>プライバシーポリシーに同意する</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="section" id="card">
+        <p class="section-number">04</p>
+        <h2 class="section-title">カード</h2>
+        <p>関連する情報を 1 つの境界でまとめる。クリック可能な場合は枠ごとリンク化（`a.card`）する。</p>
+        <div class="preview">
+          <div class="card-demo">
+            <h4>Cache Components</h4>
+            <p>Next.js 16 で導入された部分的事前レンダリングのキャッシュ戦略。</p>
+          </div>
+        </div>
+        <h3>仕様</h3>
+        <table>
+          <tbody>
+            <tr><td>背景</td><td><code>color.surface.muted</code></td></tr>
+            <tr><td>枠</td><td><code>1px solid color.border.default</code></td></tr>
+            <tr><td>角丸</td><td><code>radius.xs</code></td></tr>
+            <tr><td>パディング</td><td><code>space.6</code></td></tr>
+            <tr><td>hover (リンク時)</td><td>枠を <code>color.text.tertiary</code> に</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section" id="badge">
+        <p class="section-number">05</p>
+        <h2 class="section-title">バッジ</h2>
+        <p>ステータスやカテゴリを示す小さな識別子。<code>radius.sm</code>（ピル）を使用する。</p>
+        <div class="preview">
+          <span class="badge">Default</span>
+          <span class="badge badge--accent">Draft</span>
+          <span class="badge badge--solid">Published</span>
+        </div>
+        <h3>使い分け</h3>
+        <ul>
+          <li><strong>Default</strong> — カテゴリ・タグ。</li>
+          <li><strong>Accent</strong> — レビュー中など注意を引きたい状態。</li>
+          <li><strong>Solid</strong> — 確定した状態（公開済 等）。</li>
+        </ul>
+      </section>
+
+      <section class="section" id="callout">
+        <p class="section-number">06</p>
+        <h2 class="section-title">コールアウト</h2>
+        <p>本文の流れを止めて読み手の注意を引きたいときに使う。1 ページに 2 つまで。</p>
+        <div class="callout">
+          <strong>注意</strong>
+          <p>このトークンは破壊的変更の対象です。次のメジャーリリースで非互換変更が入る予定。</p>
+        </div>
+        <pre><code>&lt;div class="callout"&gt;
+  &lt;strong&gt;注意&lt;/strong&gt;
+  &lt;p&gt;本文の流れを止めて伝えたいメッセージ。&lt;/p&gt;
+&lt;/div&gt;</code></pre>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Components · Specs</span>
+      <a href="./index.html">インデックスに戻る</a>
+    </footer>
+  </div>
+</body>
+</html>
