@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>お問い合わせフォーム 機能仕様書 — Design Docs</title>
+  <meta name="description" content="お問い合わせフォームの機能仕様書（サンプル）。HTML 単体で構築する設計書のテンプレート例。">
+  <style>
+    :root {
+      --font-family-stack: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      --font-size-xs: 12.5px;
+      --font-size-sm: 13px;
+      --font-size-md: 14.5px;
+      --font-size-lg: 16px;
+      --font-size-xl: 16.5px;
+      --font-size-2xl: 27px;
+      --font-size-3xl: 62px;
+      --font-weight-base: 400;
+      --line-height-base: 1.65;
+
+      --color-text-primary: #141413;
+      --color-text-secondary: #3d3d3a;
+      --color-text-tertiary: #d97757;
+      --color-text-inverse: #87867f;
+      --color-surface-base: #000000;
+      --color-surface-muted: #ffffff;
+      --color-surface-raised: #faf9f5;
+      --color-border-default: #d1cfc5;
+
+      --space-1: 7px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 14px;
+      --space-5: 22px;
+      --space-6: 24px;
+      --space-7: 26px;
+      --space-8: 36px;
+
+      --radius-xs: 14px;
+      --radius-sm: 999px;
+
+      --motion-instant: 120ms;
+      --motion-fast: 150ms;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-family-stack);
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-base);
+      line-height: var(--line-height-base);
+      color: var(--color-text-primary);
+      background: var(--color-surface-raised);
+    }
+
+    a {
+      color: var(--color-text-primary);
+      text-decoration-color: var(--color-border-default);
+      text-underline-offset: 3px;
+      transition: color var(--motion-fast) ease, text-decoration-color var(--motion-fast) ease;
+    }
+    a:hover { color: var(--color-text-tertiary); text-decoration-color: var(--color-text-tertiary); }
+    a:focus-visible { outline: 2px solid var(--color-text-tertiary); outline-offset: 3px; border-radius: 4px; }
+
+    .container { max-width: 760px; margin: 0 auto; padding: var(--space-8) var(--space-6); }
+
+    .breadcrumb {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-inverse);
+      margin: 0 0 var(--space-6);
+    }
+    .breadcrumb a { color: var(--color-text-inverse); }
+
+    .doc-header { margin-bottom: var(--space-8); padding-bottom: var(--space-6); border-bottom: 1px solid var(--color-border-default); }
+    .doc-eyebrow {
+      font-size: var(--font-size-xs);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-inverse);
+      margin: 0 0 var(--space-3);
+    }
+    .doc-title {
+      font-size: 44px;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin: 0 0 var(--space-5);
+    }
+    .doc-meta {
+      display: flex;
+      gap: var(--space-6);
+      flex-wrap: wrap;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin: 0;
+    }
+    .doc-meta dt { color: var(--color-text-inverse); margin-right: var(--space-2); display: inline; }
+    .doc-meta dd { margin: 0; display: inline; }
+    .doc-meta > div { display: inline; }
+
+    .toc {
+      margin: 0 0 var(--space-8);
+      padding: var(--space-5) var(--space-6);
+      background: var(--color-surface-muted);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-xs);
+    }
+    .toc h2 {
+      margin: 0 0 var(--space-3);
+      font-size: var(--font-size-xs);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-inverse);
+      font-weight: 500;
+    }
+    .toc ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-2) var(--space-5);
+      counter-reset: toc;
+      font-size: var(--font-size-md);
+    }
+    .toc li { counter-increment: toc; }
+    .toc li::before {
+      content: counter(toc, decimal-leading-zero) " ";
+      color: var(--color-text-inverse);
+      font-variant-numeric: tabular-nums;
+      margin-right: var(--space-2);
+    }
+
+    .section { margin: 0 0 var(--space-8); scroll-margin-top: var(--space-6); }
+    .section-number {
+      font-size: var(--font-size-xs);
+      letter-spacing: 0.1em;
+      color: var(--color-text-tertiary);
+      font-variant-numeric: tabular-nums;
+      margin: 0 0 var(--space-2);
+    }
+    .section-title {
+      font-size: var(--font-size-2xl);
+      letter-spacing: -0.01em;
+      margin: 0 0 var(--space-5);
+    }
+    .section h3 {
+      font-size: var(--font-size-xl);
+      margin: var(--space-6) 0 var(--space-3);
+      letter-spacing: -0.005em;
+    }
+    .section p { margin: 0 0 var(--space-4); color: var(--color-text-secondary); }
+    .section p strong { color: var(--color-text-primary); font-weight: 600; }
+    .section ul, .section ol { padding-left: var(--space-6); color: var(--color-text-secondary); }
+    .section li { margin-bottom: var(--space-2); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--space-4) 0;
+      font-size: var(--font-size-md);
+    }
+    th, td {
+      text-align: left;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--color-border-default);
+      vertical-align: top;
+    }
+    th {
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text-inverse);
+      background: var(--color-surface-muted);
+    }
+    td { color: var(--color-text-secondary); }
+    td:first-child { color: var(--color-text-primary); font-weight: 500; }
+
+    code {
+      font-family: var(--font-family-mono);
+      font-size: 0.9em;
+      padding: 2px 6px;
+      background: var(--color-surface-muted);
+      border: 1px solid var(--color-border-default);
+      border-radius: 4px;
+    }
+    pre {
+      font-family: var(--font-family-mono);
+      font-size: var(--font-size-md);
+      line-height: 1.55;
+      background: var(--color-surface-muted);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-xs);
+      padding: var(--space-5) var(--space-6);
+      overflow-x: auto;
+      margin: var(--space-4) 0;
+      color: var(--color-text-primary);
+    }
+    pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+
+    .badge {
+      display: inline-block;
+      font-size: var(--font-size-xs);
+      letter-spacing: 0.04em;
+      padding: 2px var(--space-3);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border-default);
+      color: var(--color-text-secondary);
+      background: var(--color-surface-muted);
+      vertical-align: middle;
+      margin-right: var(--space-2);
+    }
+    .badge--accent { color: var(--color-text-tertiary); border-color: var(--color-text-tertiary); }
+
+    .callout {
+      border: 1px solid var(--color-border-default);
+      border-left: 3px solid var(--color-text-tertiary);
+      border-radius: var(--radius-xs);
+      padding: var(--space-4) var(--space-6);
+      background: var(--color-surface-muted);
+      margin: var(--space-5) 0;
+      font-size: var(--font-size-md);
+    }
+    .callout strong { display: block; margin-bottom: var(--space-1); color: var(--color-text-primary); }
+    .callout p { margin: 0; color: var(--color-text-secondary); }
+
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      padding-left: var(--space-7);
+      position: relative;
+      margin-bottom: var(--space-3);
+      color: var(--color-text-primary);
+    }
+    .checklist li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.4em;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--color-border-default);
+      border-radius: 4px;
+      background: var(--color-surface-muted);
+    }
+
+    dl.fields {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: var(--space-3) var(--space-5);
+      font-size: var(--font-size-md);
+      margin: var(--space-4) 0;
+    }
+    dl.fields dt { color: var(--color-text-inverse); font-weight: 500; }
+    dl.fields dd { margin: 0; color: var(--color-text-primary); }
+
+    .site-footer {
+      margin-top: var(--space-8);
+      padding-top: var(--space-6);
+      border-top: 1px solid var(--color-border-default);
+      font-size: var(--font-size-sm);
+      color: var(--color-text-inverse);
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 560px) {
+      .doc-title { font-size: 36px; }
+      .toc ol { grid-template-columns: 1fr; }
+      dl.fields { grid-template-columns: 1fr; gap: var(--space-1) 0; }
+      dl.fields dd { margin-bottom: var(--space-3); }
+      .container { padding: var(--space-6) var(--space-5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p class="breadcrumb"><a href="./index.html">← Design Docs</a></p>
+
+    <header class="doc-header">
+      <p class="doc-eyebrow">Functional Spec / Sample</p>
+      <h1 class="doc-title">お問い合わせフォーム<br>機能仕様書</h1>
+      <dl class="doc-meta">
+        <div><dt>バージョン:</dt> <dd>1.0.0</dd></div>
+        <div><dt>最終更新:</dt> <dd>2026-05-10</dd></div>
+        <div><dt>担当:</dt> <dd>プロダクトチーム</dd></div>
+        <div><dt>ステータス:</dt> <dd><span class="badge badge--accent">Draft</span></dd></div>
+      </dl>
+    </header>
+
+    <nav class="toc" aria-label="目次">
+      <h2>目次</h2>
+      <ol>
+        <li><a href="#overview">概要</a></li>
+        <li><a href="#stakeholders">関係者</a></li>
+        <li><a href="#use-cases">ユースケース</a></li>
+        <li><a href="#layout">画面構成</a></li>
+        <li><a href="#fields">入力項目</a></li>
+        <li><a href="#validation">バリデーション</a></li>
+        <li><a href="#states">画面状態</a></li>
+        <li><a href="#api">API 仕様</a></li>
+        <li><a href="#a11y">アクセシビリティ</a></li>
+        <li><a href="#qa">QA チェックリスト</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section class="section" id="overview">
+        <p class="section-number">01</p>
+        <h2 class="section-title">概要</h2>
+        <p>本仕様書は、サービスサイトに設置する <strong>お問い合わせフォーム</strong> の機能要件、画面挙動、API 連携、品質基準を定義する。送信内容は運営チームの受信箱へ転送され、送信者には自動返信メールが届く。</p>
+        <div class="callout">
+          <strong>スコープ外</strong>
+          <p>受信側の管理画面、SLA 設計、メールテンプレートのコピーライティングは別仕様書に分離する。</p>
+        </div>
+      </section>
+
+      <section class="section" id="stakeholders">
+        <p class="section-number">02</p>
+        <h2 class="section-title">関係者</h2>
+        <ul>
+          <li>プロダクトオーナー（要件決定）</li>
+          <li>フロントエンド担当（画面実装）</li>
+          <li>バックエンド担当（API・メール配信）</li>
+          <li>カスタマーサポート（受信箱運用）</li>
+          <li>法務（プライバシーポリシー文言）</li>
+        </ul>
+      </section>
+
+      <section class="section" id="use-cases">
+        <p class="section-number">03</p>
+        <h2 class="section-title">ユースケース</h2>
+        <ol>
+          <li>未登録の訪問者がプロダクトに関する質問を送信する</li>
+          <li>既存ユーザーが不具合を報告する</li>
+          <li>パートナーシップに関する問い合わせを送信する</li>
+          <li>取材・登壇依頼を送信する</li>
+        </ol>
+      </section>
+
+      <section class="section" id="layout">
+        <p class="section-number">04</p>
+        <h2 class="section-title">画面構成</h2>
+        <p>1 カラムの縦長レイアウト。最大幅は <code>720px</code>。ヒーロー、フォーム本体、補助情報、送信完了画面の 4 ブロックから構成する。</p>
+        <h3>ブロック</h3>
+        <dl class="fields">
+          <dt>ヒーロー</dt>
+          <dd>ページタイトルと一文の説明、平均応答時間の表示。</dd>
+          <dt>フォーム本体</dt>
+          <dd>5 つの入力フィールドと送信ボタン。</dd>
+          <dt>補助情報</dt>
+          <dd>連絡先メールアドレス、営業時間、よくある質問へのリンク。</dd>
+          <dt>送信完了画面</dt>
+          <dd>送信成功時にフォームと置換。受付番号と次のアクションを案内。</dd>
+        </dl>
+      </section>
+
+      <section class="section" id="fields">
+        <p class="section-number">05</p>
+        <h2 class="section-title">入力項目</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>項目</th>
+              <th>タイプ</th>
+              <th>必須</th>
+              <th>制約</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>氏名</td><td><code>text</code></td><td>✓</td><td>1〜80 文字</td></tr>
+            <tr><td>メールアドレス</td><td><code>email</code></td><td>✓</td><td>RFC 5322 準拠</td></tr>
+            <tr><td>件名</td><td><code>select</code></td><td>✓</td><td>5 択（質問 / 不具合 / 提携 / 取材 / その他）</td></tr>
+            <tr><td>お問い合わせ内容</td><td><code>textarea</code></td><td>✓</td><td>10〜2000 文字</td></tr>
+            <tr><td>プライバシーポリシー同意</td><td><code>checkbox</code></td><td>✓</td><td>true</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section" id="validation">
+        <p class="section-number">06</p>
+        <h2 class="section-title">バリデーション</h2>
+        <h3>クライアント側</h3>
+        <p>HTML 標準属性（<code>required</code> / <code>type</code> / <code>minlength</code> / <code>maxlength</code> / <code>pattern</code>）で完結させる。JavaScript は補助のみ。</p>
+        <h3>サーバ側</h3>
+        <p>クライアント側と同条件に加え、スパムフィルタおよび reCAPTCHA v3（スコア <code>≥ 0.5</code>）で再検証する。</p>
+        <h3>エラー表示</h3>
+        <p>エラーメッセージは入力欄の直下にインライン表示し、<code>aria-describedby</code> で関連付ける。送信時の要約は <code>role="alert"</code> でフォーム上部に出す。</p>
+      </section>
+
+      <section class="section" id="states">
+        <p class="section-number">07</p>
+        <h2 class="section-title">画面状態</h2>
+        <table>
+          <thead>
+            <tr><th>状態</th><th>挙動</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="badge">default</span></td><td>すべての入力欄が編集可能。送信ボタンは活性。</td></tr>
+            <tr><td><span class="badge">submitting</span></td><td>送信ボタンに spinner、入力欄を <code>readonly</code>、二重送信を抑止。</td></tr>
+            <tr><td><span class="badge badge--accent">success</span></td><td>送信完了画面に置換し、トラッキングイベントを発火。</td></tr>
+            <tr><td><span class="badge">error</span></td><td>エラー要約をフォーム上部に表示、最初の不正項目に focus を移す。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section" id="api">
+        <p class="section-number">08</p>
+        <h2 class="section-title">API 仕様</h2>
+        <h3>エンドポイント</h3>
+        <p><code>POST /api/contact</code></p>
+
+        <h3>リクエスト</h3>
+        <pre><code>{
+  "name": "山田 太郎",
+  "email": "taro@example.com",
+  "topic": "question",
+  "message": "...",
+  "agreed_at": "2026-05-10T11:00:00+09:00",
+  "recaptcha_token": "..."
+}</code></pre>
+
+        <h3>レスポンス（成功）</h3>
+        <pre><code>HTTP/1.1 202 Accepted
+Content-Type: application/json
+
+{ "ticket_id": "TCK-20260510-0001" }</code></pre>
+
+        <h3>エラーステータス</h3>
+        <ul>
+          <li><code>400 Bad Request</code> — バリデーションエラー</li>
+          <li><code>429 Too Many Requests</code> — レート制限超過 / reCAPTCHA スコア不足</li>
+          <li><code>5xx</code> — サーバ側障害（リトライ可）</li>
+        </ul>
+      </section>
+
+      <section class="section" id="a11y">
+        <p class="section-number">09</p>
+        <h2 class="section-title">アクセシビリティ</h2>
+        <p>WCAG 2.2 AA に準拠する。</p>
+        <ul>
+          <li>すべての入力欄に対応する <code>&lt;label&gt;</code> を持つこと。</li>
+          <li>エラー時は <code>aria-invalid="true"</code> と <code>aria-describedby</code> を必ず設定する。</li>
+          <li>focus-visible は <code>2px solid #d97757</code>、offset <code>3px</code>。</li>
+          <li>キーボードのみで全操作が完結すること。Tab 順序は視覚的順序と一致する。</li>
+          <li>送信中・成功・失敗の状態を <code>aria-live="polite"</code> で通知する。</li>
+          <li>本文と背景のコントラスト比は <code>4.5:1</code> 以上を保つ。</li>
+        </ul>
+      </section>
+
+      <section class="section" id="qa">
+        <p class="section-number">10</p>
+        <h2 class="section-title">QA チェックリスト</h2>
+        <ul class="checklist">
+          <li>必須項目が空のまま送信できないこと。</li>
+          <li>不正なメール形式で送信を試みた際にインラインエラーが表示されること。</li>
+          <li>送信中に再度送信ボタンを押下しても二重送信が発生しないこと。</li>
+          <li>バリデーションエラー後、最初の不正項目に focus が移動すること。</li>
+          <li>スクリーンリーダーで送信状態（送信中 / 成功 / 失敗）が読み上げられること。</li>
+          <li>reCAPTCHA スコアが閾値未満の場合に <code>429</code> が返ること。</li>
+          <li>WCAG 2.2 AA のコントラスト比を全テキストで満たすこと。</li>
+          <li>モバイル幅（375px）でレイアウト崩れがないこと。</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>サンプル仕様書 · 内容はダミーです</span>
+      <a href="./index.html">インデックスに戻る</a>
+    </footer>
+  </div>
+</body>
+</html>
